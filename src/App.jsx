@@ -2,11 +2,15 @@ import { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 import Login from './pages/Login'
 import Onboarding from './pages/Onboarding'
+import Dashboard from './pages/Dashboard'
+import Directory from './pages/Directory'
+import JobBoard from './pages/JobBoard'
 
 function App() {
   const [user, setUser] = useState(null)
   const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState('home')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -18,10 +22,16 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) checkMember(session.user.id)
-      else setLoading(false)
+      else { setLoading(false); setMember(null); setPage('home') }
     })
 
-    return () => subscription.unsubscribe()
+    const handleNav = (e) => setPage(e.detail)
+    window.addEventListener('navigate', handleNav)
+
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('navigate', handleNav)
+    }
   }, [])
 
   const checkMember = async (userId) => {
@@ -35,22 +45,19 @@ function App() {
   }
 
   if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}>Loading...</div>
-
   if (!user) return <Login />
-
   if (!member) return <Onboarding user={user} />
 
   return (
-    <div style={{ textAlign: 'center', padding: '4rem', fontFamily: 'system-ui' }}>
-      <h1>Welcome back, {member.full_name}!</h1>
-      <p>You're signed in to Alaika Network.</p>
-      <button onClick={() => supabase.auth.signOut()} style={{
-        padding: '0.5rem 1rem',
-        marginTop: '1rem',
-        cursor: 'pointer',
-      }}>
-        Sign Out
-      </button>
+    <div>
+      <Dashboard member={member} />
+      {page === 'directory' && <Directory />}
+      {page === 'jobs' && <JobBoard user={user} />}
+      {page === 'home' && (
+        <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+          <p>Select a section above to get started.</p>
+        </div>
+      )}
     </div>
   )
 }
