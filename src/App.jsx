@@ -5,6 +5,7 @@ import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import Directory from './pages/Directory'
 import JobBoard from './pages/JobBoard'
+import ContentFeed from './pages/ContentFeed'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -53,6 +54,7 @@ function App() {
       <Dashboard member={member} />
       {page === 'directory' && <Directory />}
       {page === 'jobs' && <JobBoard user={user} />}
+      {page === 'newsletters' && <ContentFeed user={user} />}
       {page === 'home' && (
         <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
           <p>Select a section above to get started.</p>
