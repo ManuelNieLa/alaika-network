@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard'
 import Directory from './pages/Directory'
 import JobBoard from './pages/JobBoard'
 import ContentFeed from './pages/ContentFeed'
+import Events from './pages/Events'
+import Videos from './pages/Videos'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -54,6 +56,8 @@ function App() {
       <Dashboard member={member} />
       {page === 'directory' && <Directory />}
       {page === 'jobs' && <JobBoard user={user} />}
+      {page === 'events' && <Events user={user} />}
+      {page === 'videos' && <Videos user={user} />}
       {page === 'newsletters' && <ContentFeed user={user} />}
       {page === 'home' && (
         <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
