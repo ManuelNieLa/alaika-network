@@ -1,69 +1,37 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 import Login from './pages/Login'
-import Onboarding from './pages/Onboarding'
-import Dashboard from './pages/Dashboard'
-import Directory from './pages/Directory'
-import JobBoard from './pages/JobBoard'
-import ContentFeed from './pages/ContentFeed'
-import Events from './pages/Events'
-import Videos from './pages/Videos'
 
 function App() {
   const [user, setUser] = useState(null)
-  const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState('home')
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) checkMember(session.user.id)
-      else setLoading(false)
+  useEffect(function() {
+    supabase.auth.getSession().then(function(result) {
+      var s = result.data.session
+      setUser(s ? s.user : null)
+      setLoading(false)
     })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) checkMember(session.user.id)
-      else { setLoading(false); setMember(null); setPage('home') }
+    var sub = supabase.auth.onAuthStateChange(function(_e, session) {
+      setUser(session ? session.user : null)
+      setLoading(false)
     })
-
-    const handleNav = (e) => setPage(e.detail)
-    window.addEventListener('navigate', handleNav)
-
-    return () => {
-      subscription.unsubscribe()
-      window.removeEventListener('navigate', handleNav)
-    }
+    return function() { sub.data.subscription.unsubscribe() }
   }, [])
 
-  const checkMember = async (userId) => {
-    const { data } = await supabase
-      .from('members')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-    setMember(data)
-    setLoading(false)
-  }
-
-  if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}>Loading...</div>
+  if (loading) return <p>Loading...</p>
   if (!user) return <Login />
-  if (!member) return <Onboarding user={user} />
 
   return (
     <div>
-      <Dashboard member={member} />
-      {page === 'directory' && <Directory />}
-      {page === 'jobs' && <JobBoard user={user} />}
-      {page === 'events' && <Events user={user} />}
-      {page === 'videos' && <Videos user={user} />}
-      {page === 'newsletters' && <ContentFeed user={user} />}
-      {page === 'home' && (
-        <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-          <p>Select a section above to get started.</p>
-        </div>
-      )}
+      <div style={{ background: 'black', padding: '1rem', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ color: '#C8FF00', fontWeight: 700, fontSize: '1.25rem' }}>ALAIKA Network</span>
+        <button onClick={function() { supabase.auth.signOut() }} style={{ color: '#999', background: 'none', border: '1px solid #555', padding: '0.3rem 0.75rem', borderRadius: '6px', cursor: 'pointer' }}>Sign Out</button>
+      </div>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>NAVBAR WORKS!</h2>
+        <p>Logged in as {user.email}</p>
+      </div>
     </div>
   )
 }
